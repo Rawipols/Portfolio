@@ -3,33 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAWIPOL's Portfolio</title>
+    <title>ระบบติดตามพอร์ตการลงทุนรวม (Mutual Fund, PVD & Stocks)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM -->
+    <!-- React & ReactDOM (Production builds for stability) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- PropTypes (Required by Recharts UMD) -->
     <script crossorigin src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
     <!-- Recharts -->
-    <script crossorigin src="https://unpkg.com/recharts@2.1.12/umd/Recharts.js"></script>
-    <!-- Babel for JSX -->
+    <script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+    <!-- Babel for JSX compilation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Prompt', sans-serif;
+            background-color: #f8fafc;
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
-    <div id="root"></div>
+    <div id="root">
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
+            <div style="text-align: center;">
+                <div style="font-size: 20px; font-weight: bold; color: #2563eb; margin-bottom: 10px;">กำลังโหลดระบบพอร์ตการลงทุน...</div>
+                <div style="color: #64748b; font-size: 14px;">กรุณารอสักครู่ ระบบกำลังเตรียมฐานข้อมูล 41 รายการ</div>
+            </div>
+        </div>
+    </div>
 
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
-        const { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } = window.Recharts;
+        const { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } = window.Recharts || {};
         
-        // Native SVG Icon components (Prevents DOM conflicts with React)
+        // Native SVG Icons
         const Plus = ({ className = "w-4 h-4" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="M12 5v14"/></svg>
         );
@@ -65,50 +73,99 @@
         );
 
         const INITIAL_FUNDS = [
-          { id: '1', ticker: 'ES-SETESG-D', name: 'ES-SETESG-ThaiESG-D', category: 'หุ้นไทย (Thai ESG)', risk: 6, units: 16302.9301, cost: 150000.00, currentValue: 192646.83 },
-          { id: '2', ticker: 'UTSEQ-THAIESG', name: 'UTSEQ-THAIESG', category: 'หุ้นไทย (Thai ESG)', risk: 6, units: 15289.8964, cost: 150000.00, currentValue: 175498.96 },
-          { id: '3', ticker: 'UTSB-THAIESG', name: 'UTSB-THAIESG', category: 'ตราสารหนี้ไทย (Thai ESG)', risk: 3, units: 15006.1525, cost: 150000.00, currentValue: 151653.68 },
-          { id: '4', ticker: 'K-ESGBF', name: 'K-ESGBF-ThaiESG', category: 'ตราสารหนี้ไทย (Thai ESG)', risk: 4, units: 15000.0000, cost: 150000.00, currentValue: 149281.50 },
-          { id: '5', ticker: 'SCBGOLDH', name: 'SCBGOLDHRMF', category: 'ทองคำ (Gold RMF)', risk: 8, units: 7905.9358, cost: 150000.00, currentValue: 147644.14 },
-          { id: '6', ticker: 'MCHINASSF', name: 'MCHINASSF', category: 'หุ้นจีน (China SSF)', risk: 6, units: 11790.8139, cost: 100000.00, currentValue: 109623.91 },
-          { id: '7', ticker: 'ONE-ALLCHINA', name: 'ONE-ALLCHINA-ASSF', category: 'หุ้นจีน (China SSF)', risk: 6, units: 9997.2404, cost: 100000.00, currentValue: 78048.46 },
-          { id: '8', ticker: 'TCMF', name: 'TCMF', category: 'ตลาดเงิน (Money Market)', risk: 1, units: 37.5335, cost: 600.00, currentValue: 609.56 },
-          { id: '9', ticker: 'ES-CASH', name: 'ES-CASH', category: 'ตลาดเงิน (Money Market)', risk: 1, units: 20.6617, cost: 300.00, currentValue: 300.44 },
-          { id: '10', ticker: 'KKP-MP', name: 'KKP MP', category: 'ตลาดเงิน (Money Market)', risk: 1, units: 15.4329, cost: 200.00, currentValue: 200.36 },
+          { id: '1', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'ES-SETESG-D', name: 'ES-SETESG-ThaiESG-D', category: 'หุ้นไทย (Thai Equity)', risk: 6, units: 16302.9301, nav: 11.8167, cost: 150000.00, currentValue: 192646.83 },
+          { id: '2', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'UTSEQ-THAIESG', name: 'UTSEQ-THAIESG', category: 'หุ้นไทย (Thai Equity)', risk: 6, units: 15289.8964, nav: 11.4800, cost: 150000.00, currentValue: 175498.96 },
+          { id: '3', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'UTSB-THAIESG', name: 'UTSB-THAIESG', category: 'ตราสารหนี้ไทย (Fixed Income)', risk: 3, units: 15006.1525, nav: 10.1100, cost: 150000.00, currentValue: 151653.68 },
+          { id: '4', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'K-ESGBF', name: 'K-ESGBF-ThaiESG', category: 'ตราสารหนี้ไทย (Fixed Income)', risk: 4, units: 15000.0000, nav: 9.9521, cost: 150000.00, currentValue: 149281.50 },
+          { id: '5', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'SCBGOLDH', name: 'SCBGOLDHRMF', category: 'ทองคำ (Gold)', risk: 8, units: 7905.9358, nav: 18.6751, cost: 150000.00, currentValue: 147644.14 },
+          { id: '6', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'MCHINASSF', name: 'MCHINASSF (บลจ.เอ็มเอฟซี หุ้น-จีน)', category: 'หุ้นจีน (China Equity)', risk: 6, units: 11790.8139, nav: 9.2974, cost: 100000.00, currentValue: 109623.91 },
+          { id: '7', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'ONE-ALLCHINA', name: 'ONE-ALLCHINA-ASSF (บลจ.วรรณ หุ้น-จีน)', category: 'หุ้นจีน (China Equity)', risk: 6, units: 9997.2404, nav: 7.8070, cost: 100000.00, currentValue: 78048.46 },
+          { id: '8', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'TCMF', name: 'TCMF', category: 'ตลาดเงิน (Money Market)', risk: 1, units: 37.5335, nav: 16.2400, cost: 600.00, currentValue: 609.56 },
+          { id: '9', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'ES-CASH', name: 'ES-CASH', category: 'ตลาดเงิน (Money Market)', risk: 1, units: 20.6617, nav: 14.5407, cost: 300.00, currentValue: 300.44 },
+          { id: '10', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'KKP-MP', name: 'KKP MP (บลจ.เกียรตินาคินภัทร ตลาดเงิน)', category: 'ตลาดเงิน (Money Market)', risk: 1, units: 15.4329, nav: 12.9829, cost: 200.00, currentValue: 200.36 },
+          { id: '33', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'GOLD-RMF-A', name: 'GOLD-RMF-A (บลจ.วรรณ โลหะมีค่า)', category: 'ทองคำ (Gold)', risk: 8, units: 10726.0181, nav: 23.4819, cost: 234599.30, currentValue: 251867.28 },
+          { id: '34', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'PRINCIPAL-IPROPRMF', name: 'PRINCIPAL iPROPRMF (อสังหา-ยืดหยุ่น)', category: 'อสังหาฯ โลก (Global REIT)', risk: 8, units: 8896.0281, nav: 16.8293, cost: 150000.00, currentValue: 149713.93 },
+          { id: '35', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'KKP-BL-THAIESGX', name: 'KKP BL THAI ESGX-for LTF (ผสม-Aggressive)', category: 'หุ้นไทย (Thai Equity)', risk: 5, units: 14428.6474, nav: 12.6897, cost: 142052.90, currentValue: 183095.21 },
+          { id: '36', portfolioType: 'กองทุนรวม (Mutual Fund)', ticker: 'UMIX-TESGX-N68L', name: 'UMIX-TESGX-N68L (ยูโอบี ผสม-Aggressive)', category: 'หุ้นไทย (Thai Equity)', risk: 5, units: 15509.0876, nav: 11.7796, cost: 150932.90, currentValue: 182690.85 },
+          { id: '11', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-SFIXED-ONE', name: 'Short-term Fixed-ONEAM (แผน 23%)', category: 'ตราสารหนี้ไทย (Fixed Income)', risk: 2, units: 0, nav: 0, cost: 377525.90, currentValue: 432839.60 },
+          { id: '12', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-FIXED-SCB', name: 'Fixed-SCBAM (แผน 10%)', category: 'ตราสารหนี้ไทย (Fixed Income)', risk: 3, units: 0, nav: 0, cost: 164141.70, currentValue: 189178.87 },
+          { id: '13', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-FIXED-ONE', name: 'Fixed-ONEAM (แผน 10%)', category: 'ตราสารหนี้ไทย (Fixed Income)', risk: 3, units: 0, nav: 0, cost: 164141.65, currentValue: 189263.79 },
+          { id: '14', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-FIXED-PRIN', name: 'Fixed-PRINCIPAL (แผน 10%)', category: 'ตราสารหนี้ไทย (Fixed Income)', risk: 3, units: 0, nav: 0, cost: 164141.70, currentValue: 189564.95 },
+          { id: '15', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-THAIEQ-ONE', name: 'Thai EQ-ONEAM (แผน 2.5%)', category: 'หุ้นไทย (Thai Equity)', risk: 6, units: 0, nav: 0, cost: 41035.45, currentValue: 54468.46 },
+          { id: '16', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-THAIEQ-KTAM', name: 'Thai EQ-KTAM (แผน 2.5%)', category: 'หุ้นไทย (Thai Equity)', risk: 6, units: 0, nav: 0, cost: 41035.40, currentValue: 54449.79 },
+          { id: '17', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-GLOBEQ-KASSET', name: 'Global EQ-KASSET (แผน 12.5%)', category: 'หุ้นโลก (Global Equity)', risk: 6, units: 0, nav: 0, cost: 205177.14, currentValue: 274356.48 },
+          { id: '18', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-GLOBEQ-BBLAM', name: 'Global EQ-BBLAM (แผน 12.5%)', category: 'หุ้นโลก (Global Equity)', risk: 6, units: 0, nav: 0, cost: 205177.15, currentValue: 274013.49 },
+          { id: '19', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-REIT-MFC', name: 'Global REIT-MFC (แผน 2.5%)', category: 'อสังหาฯ โลก (Global REIT)', risk: 7, units: 0, nav: 0, cost: 41035.45, currentValue: 50633.97 },
+          { id: '20', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-REIT-BBLAM', name: 'Global REIT-BBLAM (แผน 2.5%)', category: 'อสังหาฯ โลก (Global REIT)', risk: 7, units: 0, nav: 0, cost: 41035.45, currentValue: 50802.21 },
+          { id: '21', portfolioType: 'กองทุนสำรองเลี้ยงชีพ (PVD)', ticker: 'PVD-GOLD-BBLAM', name: 'Gold-BBLAM (แผน 12%)', category: 'ทองคำ (Gold)', risk: 8, units: 0, nav: 0, cost: 196970.01, currentValue: 217810.57 },
+          { id: '22', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '002966.SZ', name: 'Bank of Suzhou Co., Ltd. (CN¥1,818)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 200, nav: 44.7346, cost: 9144.41, currentValue: 8946.92 },
+          { id: '23', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '601665.SS', name: 'Qilu Bank Co., Ltd. (CN¥24,768)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 3600, nav: 33.8585, cost: 113994.03, currentValue: 121890.76 },
+          { id: '24', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '600919.SS', name: 'Bank of Jiangsu Co., Ltd. (CN¥24,140)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 2000, nav: 59.4001, cost: 115419.44, currentValue: 118800.18 },
+          { id: '25', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '601838.SS', name: 'Bank of Chengdu Co., Ltd. (CN¥22,620)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 1200, nav: 92.7665, cost: 107010.00, currentValue: 111319.81 },
+          { id: '26', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '600988.SS', name: 'Chifeng Jilong Gold Mining (CN¥21,250)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 500, nav: 209.1553, cost: 102311.17, currentValue: 104577.63 },
+          { id: '27', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '600989.SS', name: 'Ningxia Baofeng Energy Group (CN¥4,516)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 200, nav: 111.1230, cost: 23309.78, currentValue: 22224.59 },
+          { id: '28', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '603979.SS', name: 'JCHX Mining Management (CN¥22,812)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 300, nav: 374.2157, cost: 113116.58, currentValue: 112264.70 },
+          { id: '29', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '002039.SZ', name: 'GuiZhou QianYuan Power (CN¥20,933)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 1100, nav: 93.6523, cost: 103321.41, currentValue: 103017.57 },
+          { id: '30', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '600428.SS', name: 'COSCO SHIPPING Specialized (CN¥21,337)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 1900, nav: 55.2662, cost: 112969.71, currentValue: 105005.78 },
+          { id: '31', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '002947.SZ', name: 'Suzhou Hengmingda Electronic (CN¥19,731)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 300, nav: 323.6739, cost: 90386.11, currentValue: 97102.17 },
+          { id: '32', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '600961.SS', name: 'Zhuzhou Smelter Group (CN¥17,129)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 700, nav: 120.4242, cost: 100436.32, currentValue: 84296.95 },
+          { id: '37', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: '605319.SS', name: 'Wuxi Zhenhua Auto Parts (CN¥18,528)', category: 'หุ้นจีน (China Equity)', risk: 7, units: 800, nav: 113.9773, cost: 99334.98, currentValue: 91181.85 },
+          { id: '38', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: 'VTI', name: 'Vanguard Total Stock Market ETF ($335.90)', category: 'หุ้นโลก (Global Equity)', risk: 6, units: 0.881, nav: 12614.5857, cost: 11067.13, currentValue: 11113.45 },
+          { id: '39', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: 'VCIT', name: 'Vanguard Interm-Term Corp Bond ETF ($118.09)', category: 'ตราสารหนี้โลก (Global Bond)', risk: 4, units: 1.477, nav: 2645.2000, cost: 3964.86, currentValue: 3906.96 },
+          { id: '40', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: 'VEA', name: 'Vanguard FTSE Developed Markets ETF ($95.10)', category: 'หุ้นโลก (Global Equity)', risk: 6, units: 1.308, nav: 2405.6575, cost: 3193.92, currentValue: 3146.60 },
+          { id: '41', portfolioType: 'หุ้นต่างประเทศ (Foreign Stock)', ticker: 'VWO', name: 'Vanguard FTSE Emerging Markets ETF ($48.02)', category: 'หุ้นโลก (Global Equity)', risk: 7, units: 0.786, nav: 2021.5394, cost: 1583.97, currentValue: 1588.93 }
         ];
 
-        const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
+        const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#6366f1'];
 
         function App() {
           const [funds, setFunds] = useState(() => {
-            const saved = localStorage.getItem('my_fund_portfolio_v1');
+            const saved = localStorage.getItem('my_fund_portfolio_v6');
             if (saved) {
               try { return JSON.parse(saved); } catch (e) { return INITIAL_FUNDS; }
             }
             return INITIAL_FUNDS;
           });
 
-          const [newFund, setNewFund] = useState({ ticker: '', name: '', category: 'หุ้นไทย (Thai ESG)', risk: 6, units: '', cost: '', currentValue: '' });
+          const [activeTab, setActiveTab] = useState('ALL');
+          const [newFund, setNewFund] = useState({
+            portfolioType: 'กองทุนรวม (Mutual Fund)',
+            ticker: '',
+            name: '',
+            category: 'หุ้นไทย (Thai Equity)',
+            risk: 6,
+            units: '',
+            nav: '',
+            cost: '',
+            currentValue: ''
+          });
           const [copied, setCopied] = useState(false);
           const [showPromptModal, setShowPromptModal] = useState(false);
           const [showResetConfirm, setShowResetConfirm] = useState(false);
           const [isSyncing, setIsSyncing] = useState(false);
 
           useEffect(() => {
-            localStorage.setItem('my_fund_portfolio_v1', JSON.stringify(funds));
+            try {
+              localStorage.setItem('my_fund_portfolio_v6', JSON.stringify(funds));
+            } catch (e) {}
           }, [funds]);
 
+          const filteredFunds = useMemo(() => {
+            if (activeTab === 'ALL') return funds;
+            return funds.filter((f) => f.portfolioType === activeTab);
+          }, [funds, activeTab]);
+
           const summary = useMemo(() => {
-            const totalCost = funds.reduce((sum, f) => sum + (Number(f.cost) || 0), 0);
-            const totalValue = funds.reduce((sum, f) => sum + (Number(f.currentValue) || 0), 0);
+            const totalCost = filteredFunds.reduce((sum, f) => sum + (Number(f.cost) || 0), 0);
+            const totalValue = filteredFunds.reduce((sum, f) => sum + (Number(f.currentValue) || 0), 0);
             const totalPL = totalValue - totalCost;
             const totalPLPercent = totalCost > 0 ? (totalPL / totalCost) * 100 : 0;
             return { totalCost, totalValue, totalPL, totalPLPercent };
-          }, [funds]);
+          }, [filteredFunds]);
 
           const allocationData = useMemo(() => {
             const map = {};
-            funds.forEach((f) => {
+            filteredFunds.forEach((f) => {
               const val = Number(f.currentValue) || 0;
               map[f.category] = (map[f.category] || 0) + val;
             });
@@ -117,12 +174,14 @@
               value: Number(map[key].toFixed(2)),
               percent: summary.totalValue > 0 ? ((map[key] / summary.totalValue) * 100).toFixed(2) : 0
             }));
-          }, [funds, summary.totalValue]);
+          }, [filteredFunds, summary.totalValue]);
 
           const handleUpdateFund = (id, field, value) => {
             setFunds((prev) =>
               prev.map((f) =>
-                f.id === id ? { ...f, [field]: field === 'name' || field === 'category' || field === 'ticker' ? value : parseFloat(value) || 0 } : f
+                f.id === id
+                  ? { ...f, [field]: ['name', 'category', 'ticker', 'portfolioType'].includes(field) ? value : parseFloat(value) || 0 }
+                  : f
               )
             );
           };
@@ -132,16 +191,28 @@
             if (!newFund.name || !newFund.cost || !newFund.currentValue) return;
             const added = {
               id: Date.now().toString(),
+              portfolioType: newFund.portfolioType,
               ticker: newFund.ticker,
               name: newFund.name,
               category: newFund.category,
               risk: Number(newFund.risk) || 5,
               units: Number(newFund.units) || 0,
+              nav: Number(newFund.nav) || 0,
               cost: Number(newFund.cost) || 0,
               currentValue: Number(newFund.currentValue) || 0,
             };
             setFunds([...funds, added]);
-            setNewFund({ ticker: '', name: '', category: 'หุ้นไทย (Thai ESG)', risk: 6, units: '', cost: '', currentValue: '' });
+            setNewFund({
+              portfolioType: 'กองทุนรวม (Mutual Fund)',
+              ticker: '',
+              name: '',
+              category: 'หุ้นไทย (Thai Equity)',
+              risk: 6,
+              units: '',
+              nav: '',
+              cost: '',
+              currentValue: ''
+            });
           };
 
           const handleDeleteFund = (id) => { setFunds(funds.filter((f) => f.id !== id)); };
@@ -152,17 +223,17 @@
           };
 
           const generatedPrompt = useMemo(() => {
-            const lines = funds.map((f, idx) => {
+            const lines = filteredFunds.map((f, idx) => {
               const pl = f.currentValue - f.cost;
               const plPct = f.cost > 0 ? ((pl / f.cost) * 100).toFixed(2) : '0.00';
               const weight = summary.totalValue > 0 ? ((f.currentValue / summary.totalValue) * 100).toFixed(2) : '0.00';
-              return `${idx + 1}. ${f.name} [${f.category} | ความเสี่ยงระดับ ${f.risk}]: ต้นทุน ${f.cost.toLocaleString()} บาท | มูลค่าปัจจุบัน ${f.currentValue.toLocaleString()} บาท | กำไร/ขาดทุน ${pl >= 0 ? '+' : ''}${pl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท (${pl >= 0 ? '+' : ''}${plPct}%) | สัดส่วน ${weight}% ของพอร์ต`;
+              return `${idx + 1}. [${f.portfolioType}] ${f.name} (${f.category} | ความเสี่ยง ${f.risk}): ต้นทุน ${f.cost.toLocaleString()} บาท | มูลค่าปัจจุบัน ${f.currentValue.toLocaleString()} บาท | กำไร/ขาดทุน ${pl >= 0 ? '+' : ''}${pl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท (${pl >= 0 ? '+' : ''}${plPct}%) | สัดส่วน ${weight}%`;
             });
             const allocLines = allocationData.map((a) => `- ${a.name}: ${a.value.toLocaleString()} บาท (${a.percent}%)`);
             return `คุณคือผู้จัดการกองทุนส่วนตัวและนักเศรษฐศาสตร์มหภาคระดับอาวุโส
-ช่วยวิเคราะห์พอร์ตกองทุนรวมของฉันด้านล่างนี้ ควบคู่กับค้นหาข่าวสถานการณ์เศรษฐกิจและการเมืองทั้งในไทย จีน สหรัฐฯ และทิศทางราคาทองคำ/ดอกเบี้ยล่าสุดในสัปดาห์นี้:
+ช่วยวิเคราะห์พอร์ตการลงทุนของฉันด้านล่างนี้ (ประกอบด้วย กองทุนรวมลดหย่อนภาษี 14 กองทุน, กองทุนสำรองเลี้ยงชีพ PVD แผน DIY 11 นโยบาย, หุ้นจีนรายตัว 12 บริษัท และ ETF สหรัฐฯ 4 กองทุน) ควบคู่กับค้นหาข่าวสถานการณ์เศรษฐกิจโลก ไทย จีน สหรัฐฯ และทิศทางราคาทองคำ/ดอกเบี้ยล่าสุดในสัปดาห์นี้:
 
-📊 [สรุปภาพรวมพอร์ตปัจจุบัน]
+📊 [สรุปภาพรวมพอร์ต (${activeTab === 'ALL' ? 'พอร์ตรวมทั้งหมด' : activeTab})]
 - ต้นทุนรวมทั้งหมด: ${summary.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท
 - มูลค่าปัจจุบันรวม: ${summary.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท
 - กำไร/ขาดทุนสุทธิ: ${summary.totalPL >= 0 ? '+' : ''}${summary.totalPL.toLocaleString(undefined, { minimumFractionDigits: 2 })} บาท (${summary.totalPL >= 0 ? '+' : ''}${summary.totalPLPercent.toFixed(2)}%)
@@ -170,14 +241,14 @@
 🥧 [สัดส่วนตามประเภทสินทรัพย์ (Asset Allocation)]
 ${allocLines.join('\n')}
 
-📋 [รายละเอียดรายกองทุนในพอร์ต]
+📋 [รายละเอียดสินทรัพย์ในพอร์ต]
 ${lines.join('\n')}
 
 🎯 [สิ่งที่ต้องการให้คุณวิเคราะห์และแนะนำ]
-1. วิเคราะห์สถานการณ์เศรษฐกิจและการเมืองปัจจุบัน (ไทย, จีน, สหรัฐฯ, ทิศทางดอกเบี้ย กนง./Fed, และราคาทองคำ) ที่ส่งผลกระทบโดยตรงต่อสินทรัพย์ในพอร์ตของฉัน
-2. เจาะลึกคำแนะนำรายกองทุน (ระบุให้ชัดเจนว่าควร "ซื้อเพิ่ม / ถือต่อ / สับเปลี่ยนหรือขายทำกำไร")
-3. แนะนำการจัดสัดส่วนพอร์ตใหม่ (Rebalancing) และการวางแผนลดหย่อนภาษีให้เหมาะสมที่สุดในไตรมาสนี้`;
-          }, [funds, summary, allocationData]);
+1. วิเคราะห์ภาพรวม Asset Allocation ทั้งพอร์ต (เมื่อรวมทั้ง PVD, กองทุนรวม RMF/SSF/ThaiESG/ThaiESGX, หุ้นจีนรายตัว 12 บริษัท และ ETF สหรัฐฯ 4 กองทุน เข้าด้วยกัน)
+2. เจาะลึกคำแนะนำรายกองทุนในพอร์ตลดหย่อนภาษี และพอร์ตสำรองเลี้ยงชีพ PVD
+3. เจาะลึกพอร์ตหุ้นจีนรายตัวทั้ง 12 บริษัท และพอร์ต US ETF (VTI, VCIT, VEA, VWO) ว่าตัวไหนควร "ถือต่อ / ซื้อถัวเฉลี่ย / ขายทำกำไรหรือปรับพอร์ต" อย่างไร?`;
+          }, [filteredFunds, summary, allocationData, activeTab]);
 
           const handleCopyPrompt = () => {
             const textArea = document.createElement("textarea");
@@ -199,14 +270,20 @@ ${lines.join('\n')}
           const handleSyncPrices = async () => {
             setIsSyncing(true);
             try {
-              await new Promise((resolve) => setTimeout(resolve, 1200));
+              await new Promise((resolve) => setTimeout(resolve, 1000));
               setFunds((prevFunds) => 
                 prevFunds.map((fund) => {
                   if (!fund.ticker) return fund;
-                  const currentPriceEstimate = fund.currentValue / (fund.units || 1);
                   const variation = 1 + (Math.random() * 0.04 - 0.02); 
-                  const newCurrentValue = fund.units > 0 ? fund.units * (currentPriceEstimate * variation) : fund.currentValue * variation;
-                  return { ...fund, currentValue: Number(newCurrentValue.toFixed(2)) };
+                  const newNav = fund.nav > 0 ? Number((fund.nav * variation).toFixed(4)) : 0;
+                  const newCurrentValue = fund.units > 0 && newNav > 0
+                    ? fund.units * newNav
+                    : fund.currentValue * variation;
+                  return {
+                    ...fund,
+                    nav: newNav,
+                    currentValue: Number(newCurrentValue.toFixed(2))
+                  };
                 })
               );
             } finally { setIsSyncing(false); }
@@ -218,9 +295,9 @@ ${lines.join('\n')}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-2">
-                    <TrendingUp className="text-blue-600 w-8 h-8" /> ระบบติดตามพอร์ตกองทุนรวม
+                    <TrendingUp className="text-blue-600 w-8 h-8" /> ระบบติดตามพอร์ตการลงทุนรวม (All-in-One)
                   </h1>
-                  <p className="text-slate-500 text-sm mt-1">บันทึกข้อมูลอัตโนมัติในเบราว์เซอร์ • แก้ไขตัวเลขในตารางได้ทันที</p>
+                  <p className="text-slate-500 text-sm mt-1">รวมพอร์ตกองทุนรวม + กองทุนสำรองเลี้ยงชีพ (PVD) + หุ้นต่างประเทศ • บันทึกอัตโนมัติ</p>
                 </div>
                 <div className="flex flex-wrap gap-3 items-center">
                   <button onClick={handleSyncPrices} disabled={isSyncing} className="flex items-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer">
@@ -232,11 +309,11 @@ ${lines.join('\n')}
                   
                   {!showResetConfirm ? (
                     <button onClick={() => setShowResetConfirm(true)} className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all">
-                      <RotateCcw className="w-4 h-4" /> รีเซ็ต
+                      <RotateCcw className="w-4 h-4" /> รีเซ็ตพอร์ตเริ่มต้น
                     </button>
                   ) : (
                     <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
-                      <span className="text-xs text-rose-700 font-medium">ยืนยันรีเซ็ต?</span>
+                      <span className="text-xs text-rose-700 font-medium">ยืนยันรีเซ็ต 41 รายการ?</span>
                       <button onClick={confirmReset} className="bg-rose-600 hover:bg-rose-700 text-white text-xs px-2.5 py-1 rounded-lg font-medium cursor-pointer">ใช่</button>
                       <button onClick={() => setShowResetConfirm(false)} className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-2.5 py-1 rounded-lg font-medium cursor-pointer">ยกเลิก</button>
                     </div>
@@ -244,12 +321,32 @@ ${lines.join('\n')}
                 </div>
               </div>
 
+              {/* Tabs */}
+              <div className="flex flex-wrap gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
+                {[
+                  { key: 'ALL', label: `🌐 พอร์ตรวมทั้งหมด (${funds.length} รายการ)` },
+                  { key: 'กองทุนรวม (Mutual Fund)', label: `📊 กองทุนรวม (${funds.filter(f => f.portfolioType === 'กองทุนรวม (Mutual Fund)').length})` },
+                  { key: 'กองทุนสำรองเลี้ยงชีพ (PVD)', label: `🏦 กองทุนสำรองเลี้ยงชีพ PVD (${funds.filter(f => f.portfolioType === 'กองทุนสำรองเลี้ยงชีพ (PVD)').length})` },
+                  { key: 'หุ้นต่างประเทศ (Foreign Stock)', label: `🌎 หุ้นจีน & US ETF (${funds.filter(f => f.portfolioType === 'หุ้นต่างประเทศ (Foreign Stock)').length} รายการ)` }
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                      activeTab === tab.key ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
               {/* Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                   <div className="text-sm text-slate-500 font-medium flex justify-between"><span>มูลค่าพอร์ตปัจจุบัน</span><Wallet className="w-5 h-5 text-blue-500" /></div>
                   <div className="text-3xl font-bold text-slate-900 mt-2">฿{summary.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                  <div className="text-xs text-slate-400 mt-1">จากทั้งหมด {funds.length} กองทุน</div>
+                  <div className="text-xs text-slate-400 mt-1">แสดงผล {filteredFunds.length} รายการ</div>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                   <div className="text-sm text-slate-500 font-medium">ต้นทุนรวมทั้งหมด</div>
@@ -268,11 +365,11 @@ ${lines.join('\n')}
               {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                  <h2 className="text-lg font-bold text-slate-800 mb-4">🥧 สัดส่วนสินทรัพย์ (Asset Allocation)</h2>
+                  <h2 className="text-lg font-bold text-slate-800 mb-4">🥧 สัดส่วนตามประเภทสินทรัพย์ (Asset Allocation)</h2>
                   <div className="h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie data={allocationData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value" label={({name, percent}) => `${name} (${percent}%)`}>
+                        <Pie data={allocationData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value" label={({name, percent}) => `${name} (${percent}%)`}>
                           {allocationData.map((e, i) => <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />)}
                         </Pie>
                         <Tooltip formatter={(v) => `฿${Number(v).toLocaleString()}`} />
@@ -282,16 +379,16 @@ ${lines.join('\n')}
                   </div>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                  <h2 className="text-lg font-bold text-slate-800 mb-4">📊 กำไร/ขาดทุน รายกองทุน (THB)</h2>
+                  <h2 className="text-lg font-bold text-slate-800 mb-4">📊 กำไร/ขาดทุน รายสินทรัพย์ (THB)</h2>
                   <div className="h-72">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={funds.map(f => ({ name: f.name.length > 12 ? f.name.substring(0, 12) + '...' : f.name, pl: Number((f.currentValue - f.cost).toFixed(2)) }))} margin={{ top: 10, right: 20, left: 10, bottom: 40 }}>
+                      <BarChart data={filteredFunds.map(f => ({ name: f.name.length > 12 ? f.name.substring(0, 12) + '...' : f.name, pl: Number((f.currentValue - f.cost).toFixed(2)) }))} margin={{ top: 10, right: 20, left: 10, bottom: 45 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="name" angle={-25} textAnchor="end" interval={0} height={60} tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 12 }} />
+                        <XAxis dataKey="name" angle={-30} textAnchor="end" interval={0} height={65} tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 11 }} />
                         <Tooltip formatter={(v) => [`฿${Number(v).toLocaleString()}`, 'กำไร/ขาดทุน']} />
                         <Bar dataKey="pl" radius={[6, 6, 0, 0]}>
-                          {funds.map((f, i) => <Cell key={`bar-${i}`} fill={f.currentValue - f.cost >= 0 ? '#10b981' : '#ef4444'} />)}
+                          {filteredFunds.map((f, i) => <Cell key={`bar-${i}`} fill={f.currentValue - f.cost >= 0 ? '#10b981' : '#ef4444'} />)}
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
@@ -302,55 +399,69 @@ ${lines.join('\n')}
               {/* Table */}
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-6 border-b border-slate-200">
-                  <h2 className="text-lg font-bold text-slate-800">📋 ตารางจัดการพอร์ตกองทุน</h2>
-                  <p className="text-xs text-slate-500">คลิกที่ช่องตัวเลขในตารางเพื่อแก้ไขต้นทุนหรือมูลค่าปัจจุบันได้ทันที</p>
+                  <h2 className="text-lg font-bold text-slate-800">📋 ตารางจัดการพอร์ตการลงทุน ({filteredFunds.length} รายการ)</h2>
+                  <p className="text-xs text-slate-500">คลิกที่ช่องตัวเลขในตารางเพื่อแก้ไขจำนวนหน่วย ราคา NAV ต้นทุน หรือมูลค่าปัจจุบันได้ทันที</p>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200">
-                        <th className="p-4 whitespace-nowrap">Ticker</th>
-                        <th className="p-4 whitespace-nowrap">ชื่อกองทุน</th>
-                        <th className="p-4 whitespace-nowrap">หมวดหมู่</th>
-                        <th className="p-4 text-center whitespace-nowrap">ความเสี่ยง</th>
-                        <th className="p-4 text-right whitespace-nowrap">จำนวนหน่วย</th>
-                        <th className="p-4 text-right whitespace-nowrap">ต้นทุน (THB)</th>
-                        <th className="p-4 text-right whitespace-nowrap">มูลค่าปัจจุบัน (THB)</th>
-                        <th className="p-4 text-right whitespace-nowrap">กำไร/ขาดทุน</th>
-                        <th className="p-4 text-right whitespace-nowrap">สัดส่วน</th>
-                        <th className="p-4 text-center whitespace-nowrap">ลบ</th>
+                        <th className="p-3 whitespace-nowrap">พอร์ต</th>
+                        <th className="p-3 whitespace-nowrap">Ticker</th>
+                        <th className="p-3 whitespace-nowrap">ชื่อสินทรัพย์ / นโยบาย</th>
+                        <th className="p-3 whitespace-nowrap">หมวดหมู่</th>
+                        <th className="p-3 text-center whitespace-nowrap">เสี่ยง</th>
+                        <th className="p-3 text-right whitespace-nowrap">จำนวนหน่วย/หุ้น</th>
+                        <th className="p-3 text-right whitespace-nowrap">ราคา/NAV (THB)</th>
+                        <th className="p-3 text-right whitespace-nowrap">ต้นทุนรวม (THB)</th>
+                        <th className="p-3 text-right whitespace-nowrap">มูลค่าปัจจุบัน (THB)</th>
+                        <th className="p-3 text-right whitespace-nowrap">กำไร/ขาดทุน</th>
+                        <th className="p-3 text-right whitespace-nowrap">สัดส่วน</th>
+                        <th className="p-3 text-center whitespace-nowrap">ลบ</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 text-sm">
-                      {funds.map((fund) => {
+                      {filteredFunds.map((fund) => {
                         const pl = fund.currentValue - fund.cost;
                         const plPct = fund.cost > 0 ? (pl / fund.cost) * 100 : 0;
                         const weight = summary.totalValue > 0 ? (fund.currentValue / summary.totalValue) * 100 : 0;
                         return (
                           <tr key={fund.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="p-3"><input type="text" value={fund.ticker || ''} placeholder="เช่น K-USA" onChange={(e) => handleUpdateFund(fund.id, 'ticker', e.target.value)} className="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-2 py-1 text-xs font-mono text-blue-600 outline-none" /></td>
-                            <td className="p-3"><input type="text" value={fund.name} onChange={(e) => handleUpdateFund(fund.id, 'name', e.target.value)} className="w-full min-w-[140px] bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-2 py-1 font-semibold outline-none" /></td>
-                            <td className="p-3">
+                            <td className="p-2.5">
+                              <span className={`inline-block px-2 py-0.5 rounded-md text-xs font-semibold whitespace-nowrap ${
+                                fund.portfolioType.includes('PVD') ? 'bg-amber-100 text-amber-800' :
+                                fund.portfolioType.includes('หุ้นต่างประเทศ') ? 'bg-purple-100 text-purple-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {fund.portfolioType.includes('PVD') ? 'PVD' : fund.portfolioType.includes('หุ้นต่างประเทศ') ? 'Stock' : 'Fund'}
+                              </span>
+                            </td>
+                            <td className="p-2.5"><input type="text" value={fund.ticker || ''} onChange={(e) => handleUpdateFund(fund.id, 'ticker', e.target.value)} className="w-28 bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-1.5 py-1 text-xs font-mono text-blue-600 outline-none" /></td>
+                            <td className="p-2.5"><input type="text" value={fund.name} onChange={(e) => handleUpdateFund(fund.id, 'name', e.target.value)} className="w-full min-w-[180px] bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-1.5 py-1 font-semibold outline-none" /></td>
+                            <td className="p-2.5">
                               <select value={fund.category} onChange={(e) => handleUpdateFund(fund.id, 'category', e.target.value)} className="bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium text-slate-700 outline-none">
-                                <option value="หุ้นไทย (Thai ESG)">หุ้นไทย (Thai ESG)</option>
-                                <option value="ตราสารหนี้ไทย (Thai ESG)">ตราสารหนี้ไทย (Thai ESG)</option>
-                                <option value="ทองคำ (Gold RMF)">ทองคำ (Gold RMF)</option>
-                                <option value="หุ้นจีน (China SSF)">หุ้นจีน (China SSF)</option>
+                                <option value="ตราสารหนี้ไทย (Fixed Income)">ตราสารหนี้ไทย (Fixed Income)</option>
+                                <option value="ตราสารหนี้โลก (Global Bond)">ตราสารหนี้โลก (Global Bond)</option>
+                                <option value="หุ้นไทย (Thai Equity)">หุ้นไทย (Thai Equity)</option>
+                                <option value="หุ้นโลก (Global Equity)">หุ้นโลก (Global Equity)</option>
+                                <option value="หุ้นจีน (China Equity)">หุ้นจีน (China Equity)</option>
+                                <option value="อสังหาฯ โลก (Global REIT)">อสังหาฯ โลก (Global REIT)</option>
+                                <option value="ทองคำ (Gold)">ทองคำ (Gold)</option>
                                 <option value="ตลาดเงิน (Money Market)">ตลาดเงิน (Money Market)</option>
-                                <option value="หุ้นสหรัฐฯ / โลก">หุ้นสหรัฐฯ / โลก</option>
                                 <option value="อื่นๆ">อื่นๆ</option>
                               </select>
                             </td>
-                            <td className="p-3 text-center"><input type="number" min="1" max="8" value={fund.risk} onChange={(e) => handleUpdateFund(fund.id, 'risk', e.target.value)} className="w-12 text-center bg-slate-100 rounded py-1 text-xs font-bold outline-none" /></td>
-                            <td className="p-3 text-right"><input type="number" step="0.0001" value={fund.units} onChange={(e) => handleUpdateFund(fund.id, 'units', e.target.value)} className="w-24 text-right bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-2 py-1 outline-none" /></td>
-                            <td className="p-3 text-right"><input type="number" step="0.01" value={fund.cost} onChange={(e) => handleUpdateFund(fund.id, 'cost', e.target.value)} className="w-28 text-right bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded px-2 py-1 font-medium outline-none" /></td>
-                            <td className="p-3 text-right"><input type="number" step="0.01" value={fund.currentValue} onChange={(e) => handleUpdateFund(fund.id, 'currentValue', e.target.value)} className="w-28 text-right bg-blue-50/50 border border-blue-200 focus:border-blue-500 focus:bg-white rounded px-2 py-1 font-bold text-slate-900 outline-none" /></td>
-                            <td className={`p-3 text-right font-semibold whitespace-nowrap ${pl >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            <td className="p-2.5 text-center"><input type="number" min="1" max="8" value={fund.risk} onChange={(e) => handleUpdateFund(fund.id, 'risk', e.target.value)} className="w-11 text-center bg-slate-100 rounded py-1 text-xs font-bold outline-none" /></td>
+                            <td className="p-2.5 text-right"><input type="number" step="0.0001" value={fund.units || 0} onChange={(e) => handleUpdateFund(fund.id, 'units', e.target.value)} className="w-24 text-right bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-1.5 py-1 text-xs outline-none" /></td>
+                            <td className="p-2.5 text-right"><input type="number" step="0.0001" value={fund.nav || 0} onChange={(e) => handleUpdateFund(fund.id, 'nav', e.target.value)} className="w-20 text-right bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-1.5 py-1 text-xs text-slate-600 outline-none" /></td>
+                            <td className="p-2.5 text-right"><input type="number" step="0.01" value={fund.cost} onChange={(e) => handleUpdateFund(fund.id, 'cost', e.target.value)} className="w-28 text-right bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded px-2 py-1 font-medium outline-none" /></td>
+                            <td className="p-2.5 text-right"><input type="number" step="0.01" value={fund.currentValue} onChange={(e) => handleUpdateFund(fund.id, 'currentValue', e.target.value)} className="w-28 text-right bg-blue-50/50 border border-blue-200 focus:border-blue-500 focus:bg-white rounded px-2 py-1 font-bold text-slate-900 outline-none" /></td>
+                            <td className={`p-2.5 text-right font-semibold whitespace-nowrap ${pl >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                               <div>{pl >= 0 ? '+' : ''}{pl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                               <div className="text-xs">({pl >= 0 ? '+' : ''}{plPct.toFixed(2)}%)</div>
                             </td>
-                            <td className="p-3 text-right text-slate-600 font-medium">{weight.toFixed(2)}%</td>
-                            <td className="p-3 text-center"><button onClick={() => handleDeleteFund(fund.id)} className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer transition-colors"><Trash2 className="w-4 h-4" /></button></td>
+                            <td className="p-2.5 text-right text-slate-600 font-medium">{weight.toFixed(2)}%</td>
+                            <td className="p-2.5 text-center"><button onClick={() => handleDeleteFund(fund.id)} className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer transition-colors"><Trash2 className="w-4 h-4" /></button></td>
                           </tr>
                         );
                       })}
@@ -358,28 +469,35 @@ ${lines.join('\n')}
                   </table>
                 </div>
 
-                {/* Add New Fund Form */}
+                {/* Add Form */}
                 <form onSubmit={handleAddFund} className="p-4 bg-slate-50 border-t border-slate-200">
                   <div className="text-xs font-bold text-slate-600 uppercase mb-3 flex items-center gap-1">
-                    <Plus className="w-4 h-4 text-blue-600" /> เพิ่มรายการกองทุนใหม่
+                    <Plus className="w-4 h-4 text-blue-600" /> เพิ่มรายการสินทรัพย์ใหม่
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-8 gap-3">
-                    <input type="text" placeholder="Ticker (ถ้ามี)" value={newFund.ticker} onChange={(e) => setNewFund({ ...newFund, ticker: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-mono outline-none focus:border-blue-500" />
-                    <input type="text" placeholder="ชื่อกองทุน *" value={newFund.name} onChange={(e) => setNewFund({ ...newFund, name: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                    <select value={newFund.category} onChange={(e) => setNewFund({ ...newFund, category: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500">
-                      <option value="หุ้นไทย (Thai ESG)">หุ้นไทย (Thai ESG)</option>
-                      <option value="ตราสารหนี้ไทย (Thai ESG)">ตราสารหนี้ไทย (Thai ESG)</option>
-                      <option value="ทองคำ (Gold RMF)">ทองคำ (Gold RMF)</option>
-                      <option value="หุ้นจีน (China SSF)">หุ้นจีน (China SSF)</option>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-9 gap-2.5">
+                    <select value={newFund.portfolioType} onChange={(e) => setNewFund({ ...newFund, portfolioType: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-2.5 py-2 text-xs outline-none focus:border-blue-500">
+                      <option value="กองทุนรวม (Mutual Fund)">กองทุนรวม (Mutual Fund)</option>
+                      <option value="กองทุนสำรองเลี้ยงชีพ (PVD)">กองทุนสำรองเลี้ยงชีพ (PVD)</option>
+                      <option value="หุ้นต่างประเทศ (Foreign Stock)">หุ้นต่างประเทศ (Stock)</option>
+                    </select>
+                    <input type="text" placeholder="Ticker" value={newFund.ticker} onChange={(e) => setNewFund({ ...newFund, ticker: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono outline-none focus:border-blue-500" />
+                    <input type="text" placeholder="ชื่อสินทรัพย์ *" value={newFund.name} onChange={(e) => setNewFund({ ...newFund, name: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-500 md:col-span-2" required />
+                    <select value={newFund.category} onChange={(e) => setNewFund({ ...newFund, category: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-2.5 py-2 text-xs outline-none focus:border-blue-500">
+                      <option value="ตราสารหนี้ไทย (Fixed Income)">ตราสารหนี้ไทย (Fixed Income)</option>
+                      <option value="ตราสารหนี้โลก (Global Bond)">ตราสารหนี้โลก (Global Bond)</option>
+                      <option value="หุ้นไทย (Thai Equity)">หุ้นไทย (Thai Equity)</option>
+                      <option value="หุ้นโลก (Global Equity)">หุ้นโลก (Global Equity)</option>
+                      <option value="หุ้นจีน (China Equity)">หุ้นจีน (China Equity)</option>
+                      <option value="อสังหาฯ โลก (Global REIT)">อสังหาฯ โลก (Global REIT)</option>
+                      <option value="ทองคำ (Gold)">ทองคำ (Gold)</option>
                       <option value="ตลาดเงิน (Money Market)">ตลาดเงิน (Money Market)</option>
-                      <option value="หุ้นสหรัฐฯ / โลก">หุ้นสหรัฐฯ / โลก</option>
                       <option value="อื่นๆ">อื่นๆ</option>
                     </select>
-                    <input type="number" step="0.0001" placeholder="จำนวนหน่วย" value={newFund.units} onChange={(e) => setNewFund({ ...newFund, units: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                    <input type="number" step="0.01" placeholder="ต้นทุนรวม (บาท) *" value={newFund.cost} onChange={(e) => setNewFund({ ...newFund, cost: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                    <input type="number" step="0.01" placeholder="มูลค่าปัจจุบัน *" value={newFund.currentValue} onChange={(e) => setNewFund({ ...newFund, currentValue: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500" required />
-                    <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl px-4 py-2 text-sm md:col-span-2 cursor-pointer flex items-center justify-center gap-1 shadow-sm transition-colors">
-                      <Plus className="w-4 h-4" /> เพิ่มกองทุน
+                    <input type="number" step="0.0001" placeholder="จำนวนหน่วย" value={newFund.units} onChange={(e) => setNewFund({ ...newFund, units: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-500" />
+                    <input type="number" step="0.01" placeholder="ต้นทุนรวม *" value={newFund.cost} onChange={(e) => setNewFund({ ...newFund, cost: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-500" required />
+                    <input type="number" step="0.01" placeholder="มูลค่าปัจจุบัน *" value={newFund.currentValue} onChange={(e) => setNewFund({ ...newFund, currentValue: e.target.value })} className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-500" required />
+                    <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl px-3 py-2 text-xs cursor-pointer flex items-center justify-center gap-1 shadow-sm transition-colors">
+                      <Plus className="w-4 h-4" /> เพิ่มรายการ
                     </button>
                   </div>
                 </form>
@@ -390,7 +508,7 @@ ${lines.join('\n')}
                 <div className="bg-indigo-950 text-indigo-100 p-6 rounded-2xl shadow-lg border border-indigo-800 space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-amber-400" /> Prompt สำหรับนำไปวางใน Gemini / AI (คัดลอกลงคลิปบอร์ดแล้ว!)
+                      <Sparkles className="w-5 h-5 text-amber-400" /> AI Prompt (คัดลอกลงคลิปบอร์ดแล้ว!)
                     </h3>
                     <button onClick={() => setShowPromptModal(false)} className="text-xs text-indigo-300 hover:text-white underline cursor-pointer">ซ่อนหน้าต่างนี้</button>
                   </div>
